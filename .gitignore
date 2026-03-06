@@ -1,0 +1,94 @@
+# ============================================================
+# agentic_ai_portfolio — .gitignore
+# ============================================================
+
+# ── Virtual environments ─────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# ── Environment variables (never commit secrets) ─────────────
+.env
+.env.local
+.env.*.local
+
+# ── Python cache ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ── Distribution / packaging ─────────────────────────────────
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# ── FAISS indexes (large binary files — rebuild locally) ─────
+storage/
+**/faiss_index/
+**/storage/faiss_index/
+*.faiss
+*.pkl
+
+# ── Jupyter notebooks checkpoints ───────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Testing & coverage ───────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ── Type checking ────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+
+# ── IDE / editor ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# ── OS files ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Streamlit cache ──────────────────────────────────────────
+.streamlit/
+
+# ── Data files (PDFs, large datasets — store separately) ─────
+data/*.pdf
+data/*.csv
+data/*.json
+data/sample_files/
+
+# ── Output files ─────────────────────────────────────────────
+outputs/
+*.hash
+*.png
+
+# ── Torch / ML artifacts ─────────────────────────────────────
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# ── Temporary files ──────────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+*.egg-info/
