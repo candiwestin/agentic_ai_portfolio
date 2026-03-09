@@ -30,11 +30,10 @@ dist/
 .eggs/
 
 # ── FAISS indexes (large binary files — rebuild locally) ─────
-storage/
-**/faiss_index/
-**/storage/faiss_index/
-*.faiss
-*.pkl
+# FAISS indexes now tracked in git for deployment
+# **/faiss_index/
+# *.faiss
+# *.pkl
 
 # ── Jupyter notebooks checkpoints ───────────────────────────
 .ipynb_checkpoints/

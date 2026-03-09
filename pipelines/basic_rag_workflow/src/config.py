@@ -14,7 +14,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 
 # Source documents
 SOURCE_URLS = [
-    "https://www.ibm.com/think/topics/agentic-ai",
-    "https://www.nasa.gov/international-space-station",
-    os.path.join(PROJECT_ROOT, "data", "sample_files", "1706.03762v7.pdf"),
+    "https://en.wikipedia.org/wiki/National_Football_League",
+    "https://en.wikipedia.org/wiki/2024_NFL_season",
+    "https://en.wikipedia.org/wiki/2024%E2%80%9325_NFL_playoffs",
+    "https://en.wikipedia.org/wiki/Super_Bowl_LIX",
 ]

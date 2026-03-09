@@ -1,24 +1,35 @@
 """Document loading and indexing for MCP agent workflow"""
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import VECTOR_DB_PATH
 from shared.utils.loader_utils import load_content
 from shared.utils.chunking_utils import create_chunks
 from shared.utils.vector_utils import create_vector_db
 from config import VECTOR_DB_PATH
 
-# project root
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+SOURCE_URLS = [
+    "https://modelcontextprotocol.io/introduction",
+    "https://modelcontextprotocol.io/docs/concepts/architecture",
+    "https://modelcontextprotocol.io/docs/concepts/tools",
+    "https://en.wikipedia.org/wiki/Model_Context_Protocol",
+]
 
-# PDF path
-PDF_PATH = os.path.join(PROJECT_ROOT, "data", "sample_files", "Deloitte_Company_Profile.pdf")
-
-
-def load_pdf_to_db(file_path=PDF_PATH, persist_directory=VECTOR_DB_PATH):
-    """Load PDF and create FAISS index"""
-    print(f"Loading: {file_path}")
-    pages = load_content(file_path)
-    chunks = create_chunks(pages)
+def load_documents_to_db(persist_directory=VECTOR_DB_PATH):
+    """Load MCP documentation URLs and create FAISS index"""
+    all_pages = []
+    for url in SOURCE_URLS:
+        print(f"Loading: {url}")
+        try:
+            pages = load_content(url)
+            all_pages.extend(pages)
+            print(f"✓ Loaded {len(pages)} pages")
+        except Exception as e:
+            print(f"Error loading {url}: {e}")
+            continue
+    chunks = create_chunks(all_pages)
     create_vector_db(chunks, persist_directory=persist_directory)
-    print(f"✓ Loaded {len(chunks)} chunks from {file_path}")
+    print(f"✓ Loaded {len(chunks)} chunks into vector DB")
 
 if __name__ == "__main__":
-    load_pdf_to_db()
+    load_documents_to_db()
