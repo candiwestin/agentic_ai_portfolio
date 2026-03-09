@@ -28,6 +28,7 @@ class ChatRequest(BaseModel):
 
 # ── Health check — keeps Render warm via UptimeRobot ──
 @app.get("/health")
+@app.post("/health")
 def health():
     return {"status": "ok"}
 
