@@ -15,11 +15,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import shared utils at top level
-from shared.utils.vector_utils import load_vector_db
+from shared.utils.vector_utils import load_vector_db, get_embeddings
 from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
 from shared.utils.llm_utils import get_llm, invoke_llm
 from shared.utils.web_search_utils import web_search, format_search_results
 
+# Create embeddings once at module load
+embeddings = get_embeddings()
+
+# add api
 app = FastAPI(title="Agentic AI Portfolio API")
 
 app.add_middleware(
@@ -39,7 +43,7 @@ def load_dbs():
     try:
         basic_path = os.path.join(os.path.dirname(__file__), '../pipelines/basic_rag_workflow/storage/faiss_basic')
         logger.info(f"Loading Basic RAG DB from: {basic_path}")
-        app.state.basic_db = load_vector_db(persist_directory=basic_path)
+        app.state.basic_db = load_vector_db(persist_directory=basic_path, embeddings=embeddings)
         logger.info("✓ Basic RAG DB loaded")
     except Exception as e:
         logger.error(f"Basic RAG DB error: {e}")
@@ -47,7 +51,7 @@ def load_dbs():
     try:
         agentic_path = os.path.join(os.path.dirname(__file__), '../pipelines/agentic_rag_workflow/storage/faiss_agentic')
         logger.info(f"Loading Agentic RAG DB from: {agentic_path}")
-        app.state.agentic_db = load_vector_db(persist_directory=agentic_path)
+        app.state.agentic_db = load_vector_db(persist_directory=agentic_path, embeddings=embeddings)
         logger.info("✓ Agentic RAG DB loaded")
     except Exception as e:
         logger.error(f"Agentic RAG DB error: {e}")
