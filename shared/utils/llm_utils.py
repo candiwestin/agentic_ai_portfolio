@@ -10,7 +10,8 @@ def get_llm(model=DEFAULT_MODEL, temperature=0):
     return ChatGroq(
         model=model,
         api_key=os.getenv("GROQ_API_KEY"),
-        temperature=temperature
+        temperature=temperature,
+        timeout=30
     )
 
 
