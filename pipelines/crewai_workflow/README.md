@@ -9,7 +9,7 @@ A multi-agent policy generation system using CrewAI. Four specialized agents col
 ## Architecture
 
 ```
-User Topic (CLI or Streamlit)
+User Topic
     │
     ▼
 ┌─────────────────────────────────────────────┐
@@ -81,25 +81,17 @@ python -m pipelines.crewai_workflow.src.crewai_version
 
 Runs with the default topic: *Create a Work From Home policy for US-based tech companies*
 
-### Streamlit UI
-
-```bash
-streamlit run app/main.py
-```
-
-Navigate to **Page 5 — CrewAI** in the sidebar. Enter any policy topic and click Run.
-
 ---
 
 ## Key Design Decisions
 
-**Dynamic topics** — the pipeline accepts any policy topic via CLI argument or Streamlit input. It is not hardcoded to a specific use case.
+**Dynamic topics** — the pipeline accepts any policy topic via CLI argument. It is not hardcoded to a specific use case.
 
 **Real web search** — agents call `research_topic` to retrieve live information from the web rather than relying on LLM training data.
 
 **Retry logic** — the pipeline automatically retries on Groq rate limit errors with increasing wait times (30s, 60s, 90s).
 
-**Centralized model config** — the LLM model is configured via `.env`. Set `CREWAI_MODEL` to override the default:
+**Centralized model config** — the LLM model is configured via `.env`:
 
 ```env
 DEFAULT_MODEL=llama-3.3-70b-versatile
@@ -125,3 +117,4 @@ crewai_workflow/
 - CrewAI workflows are token-heavy — each agent makes multiple LLM calls. The Groq free tier (12K TPM) may throttle mid-run. Built-in retry logic handles this automatically.
 - Sequential execution means each agent receives the previous agent's output as context.
 - All shared utilities (`llm_utils`, `web_search_utils`) are imported from `shared/utils/` — no code duplication.
+- No vector database is used — this pipeline relies entirely on web search and LLM reasoning.

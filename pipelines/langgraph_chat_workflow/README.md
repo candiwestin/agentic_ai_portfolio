@@ -29,13 +29,14 @@ User Input
 
 LangGraph manages message state automatically using `add_messages`, which appends each new message to the conversation history. This gives the agent memory across turns without any manual state management.
 
+No vector database is used — this pipeline relies entirely on the LLM's general knowledge and the conversation history passed with each request.
+
 ---
 
 ## Running the Pipeline
 
 ```bash
 source .venv/bin/activate
-cd /path/to/agentic_ai_portfolio
 python -m pipelines.langgraph_chat_workflow.src.workflow
 ```
 
@@ -58,16 +59,38 @@ The agent maintains context across turns so follow-up questions work naturally.
 
 ---
 
-## Model Selection
+## Model Configuration
 
-The Streamlit UI page allows switching between models at runtime:
+The active model is set via `DEFAULT_MODEL` in `.env`:
 
 | Model | Speed | Quality |
 |-------|-------|---------|
 | `llama-3.3-70b-versatile` | Fast | High |
 | `llama-3.1-8b-instant` | Very fast | Good |
 
-From the CLI, the model is set via `DEFAULT_MODEL` in `.env`.
+---
+
+## API Usage
+
+This pipeline is exposed via the portfolio API at `POST /api/langgraph-chat`:
+
+```json
+// Request
+{
+  "message": "What is LangGraph?",
+  "history": [
+    {"role": "user", "content": "Tell me about AI agents"},
+    {"role": "assistant", "content": "AI agents are..."}
+  ]
+}
+
+// Response
+{
+  "response": "LangGraph is a library for building stateful..."
+}
+```
+
+Conversation history is managed client-side and passed with each request.
 
 ---
 
@@ -78,8 +101,6 @@ A PNG diagram is auto-generated at startup:
 ```
 outputs/basic_workflow_diagram.png
 ```
-
-The diagram only regenerates if the workflow structure has changed (hash-based caching).
 
 ---
 
@@ -92,9 +113,8 @@ pipelines/langgraph_chat_workflow/
 ```
 
 **Shared utilities used:**
-
 ```
-shared/utils/llm_utils.py         # LLM initialization, DEFAULT_MODEL
+shared/utils/llm_utils.py         # LLM initialization
 shared/utils/graph_utils.py       # Workflow diagram generation
 ```
 

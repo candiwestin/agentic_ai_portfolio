@@ -91,3 +91,8 @@ temp/
 *.tmp
 *.bak
 *.egg-info/
+
+
+# ── Exceptions: workflow diagrams referenced in READMEs ─────
+!outputs/agentic_workflow_diagram.png
+!outputs/basic_workflow_diagram.png

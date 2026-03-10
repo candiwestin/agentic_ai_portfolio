@@ -1,6 +1,6 @@
 # Agentic RAG Workflow
 
-A LangGraph-based agentic pipeline that intelligently routes user queries to the most appropriate data source. Instead of always querying the vector database, this system classifies each query and routes it to vector search, web search, or a direct LLM response — then synthesizes a final answer with conversation memory.
+A LangGraph-based agentic pipeline that intelligently routes user queries to the most appropriate data source. Instead of always querying the vector database, this system classifies each query and routes it to vector search, web search, or a direct LLM response — then synthesizes a final answer.
 
 > **Environment setup:** See the [root README](../../README.md) for Python version requirements, venv creation, and dependency installation.
 
@@ -15,35 +15,35 @@ User Query
     │
     ▼
 ┌─────────┐
-│ Router  │  Classifies query: vector_db / web_search / generic_search
+│ Router  │  Classifies query: vector_db / web_search / generic
 └────┬────┘
      │
-     ├──► vector_db node      — FAISS similarity search on loaded documents
+     ├──► vector_db node      — FAISS similarity search on mountain biking knowledge base
      ├──► web_search node     — Tavily web search for current information
-     └──► generic_search node — Direct LLM response from training knowledge
+     └──► generic node        — Direct LLM response from training knowledge
                 │
                 ▼
         ┌───────────────┐
-        │ Final Response │  Synthesizes answer with conversation history
+        │ Final Response │  Synthesizes answer from retrieved context
         └───────────────┘
 ```
 
 **Routing logic:**
-- `vector_db` — technical questions about AI, ML, LangGraph, mountain biking, nutrition, or loaded documents
-- `web_search` — questions with time indicators: "today", "latest", "current", news, weather, scores
-- `generic_search` — simple questions, greetings, basic math, definitions
+- `vector_db` — mountain biking topics: gear, techniques, trails, bike types, racing
+- `web_search` — questions requiring current information: news, events, latest results
+- `generic` — simple questions, greetings, definitions, general knowledge
 
 ---
 
-## Pre-loaded Documents
+## Knowledge Base
 
-The database (`storage/faiss_agentic`) contains:
+The vector database (`storage/faiss_agentic`) contains **171 chunks** sourced from:
 
-| Document | Content |
-|----------|---------|
-| LangGraph Docs | Why LangGraph, concepts, state machines, use cases |
-| Mountain Bike Wikipedia | History, types, components, techniques |
-| Nutrition Wikipedia | Macronutrients, micronutrients, dietary guidelines |
+| Source | Content |
+|--------|---------|
+| Mountain Biking Guide (PDF) | Gear, techniques, trail ratings, safety, maintenance |
+| Wikipedia — Mountain Bike | History, bike types, components, disciplines |
+| Wikipedia — Mountain Bike Racing | Race formats, events, notable riders |
 
 ---
 
@@ -59,7 +59,6 @@ python -m pipelines.agentic_rag_workflow.src.setup_vector_db
 
 ```bash
 source .venv/bin/activate
-cd /path/to/agentic_ai_portfolio
 python -m pipelines.agentic_rag_workflow.src.agentic_workflow
 ```
 
@@ -69,40 +68,47 @@ python -m pipelines.agentic_rag_workflow.src.agentic_workflow
 
 ### Routes to vector_db
 ```
-Why use LangGraph over LangChain?
-What is a state machine in LangGraph?
-What are the different types of mountain bikes?
-What nutrients are essential for human health?
-What is the difference between carbohydrates and proteins?
+What are the best mountain bikes for beginners?
+What gear do I need for mountain biking?
+What is the difference between hardtail and full suspension?
+How do I choose the right trail difficulty?
+What is cross-country mountain bike racing?
 ```
 
 ### Routes to web_search
 ```
-What are the latest developments in AI today?
-Who won the most recent cycling race?
-What is the current recommended daily vitamin D intake?
+Who won the latest UCI Mountain Bike World Cup?
+What are the most popular mountain bike trails right now?
+What are the newest mountain bike models this year?
 ```
 
-### Routes to generic_search
+### Routes to generic
 ```
-What is 15 multiplied by 7?
-Tell me a joke.
 What is the capital of France?
+How many inches in a foot?
+Tell me a joke.
 ```
 
 ---
 
-## Conversation Memory
+## API Usage
 
-This pipeline maintains conversation history across turns. Each response takes into account the last 3 exchanges:
+This pipeline is exposed via the portfolio API at `POST /api/agentic-rag`:
 
+```json
+// Request
+{
+  "query": "What are the best mountain bikes for beginners?"
+}
+
+// Response
+{
+  "answer": "For beginners, the best mountain bikes...",
+  "route": "vector_db"
+}
 ```
-You: What is LangGraph?
-Agent: [detailed answer]
 
-You: How does that compare to LangChain?
-Agent: [answer referencing the previous context]
-```
+The `route` field shows which data source was used: `vector_db`, `web_search`, or `generic`.
 
 ---
 
@@ -111,8 +117,9 @@ Agent: [answer referencing the previous context]
 ```
 pipelines/agentic_rag_workflow/
 ├── src/
+│   ├── config.py                 # Source URLs, PDF paths, configuration
 │   ├── agentic_workflow.py       # Full LangGraph pipeline — entry point
-│   └── setup_vector_db.py        # Build FAISS index from source documents
+│   └── setup_vector_db.py        # Build FAISS index from configured sources
 └── storage/
     └── faiss_agentic/            # Pre-built vector database
         ├── index.faiss
@@ -120,9 +127,8 @@ pipelines/agentic_rag_workflow/
 ```
 
 **Shared utilities used:**
-
 ```
-shared/utils/llm_utils.py         # LLM initialization, DEFAULT_MODEL
+shared/utils/llm_utils.py         # LLM initialization
 shared/utils/vector_utils.py      # FAISS vector store loading
 shared/utils/retrieval_utils.py   # Chunk retrieval and formatting
 shared/utils/web_search_utils.py  # Tavily web search
