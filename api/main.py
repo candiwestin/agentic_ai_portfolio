@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,7 +10,31 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from dotenv import load_dotenv
 load_dotenv()
 
-app = FastAPI(title="Agentic AI Portfolio API")
+# ── Preload vector databases at startup ──
+@asynccontextmanager
+async def lifespan(app):
+    print("Loading vector databases...")
+    try:
+        from shared.utils.vector_utils import load_vector_db
+        basic_db_path = os.path.join(os.path.dirname(__file__), '../pipelines/basic_rag_workflow/storage/faiss_basic')
+        app.state.basic_db = load_vector_db(persist_directory=basic_db_path)
+        print("✓ Basic RAG DB loaded")
+    except Exception as e:
+        print(f"Basic RAG DB error: {e}")
+        app.state.basic_db = None
+
+    try:
+        from shared.utils.vector_utils import load_vector_db
+        agentic_db_path = os.path.join(os.path.dirname(__file__), '../pipelines/agentic_rag_workflow/storage/faiss_agentic')
+        app.state.agentic_db = load_vector_db(persist_directory=agentic_db_path)
+        print("✓ Agentic RAG DB loaded")
+    except Exception as e:
+        print(f"Agentic RAG DB error: {e}")
+        app.state.agentic_db = None
+
+    yield
+
+app = FastAPI(title="Agentic AI Portfolio API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,12 +62,13 @@ def health():
 @app.post("/api/basic-rag")
 async def basic_rag(request: QueryRequest):
     try:
-        from shared.utils.vector_utils import load_vector_db
         from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
         from shared.utils.llm_utils import get_llm, invoke_llm
 
-        db_path = os.path.join(os.path.dirname(__file__), '../pipelines/basic_rag_workflow/storage/faiss_basic')
-        vector_db = load_vector_db(persist_directory=db_path)
+        vector_db = app.state.basic_db
+        if vector_db is None:
+            return {"error": "Basic RAG vector DB not available"}
+
         chunks = retrieve_chunks(vector_db, request.query, k=5)
         context = format_chunks(chunks)
         llm = get_llm()
@@ -72,23 +98,23 @@ async def agentic_rag(request: QueryRequest):
     try:
         from pydantic import BaseModel as PydanticBase, Field
         from typing import Literal
-        from shared.utils.vector_utils import load_vector_db
         from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
         from shared.utils.llm_utils import get_llm, invoke_llm
         from shared.utils.web_search_utils import web_search, format_search_results
 
         class Router(PydanticBase):
-            route: Literal["vector_db", "web_search", "generic"]= Field(description="Route the query")
+            route: Literal["vector_db", "web_search", "generic"] = Field(description="Route the query")
 
         llm = get_llm()
         classifier = llm.with_structured_output(Router)
-        system = "Classify to 'vector_db', 'web_search', or 'generic'. vector_db for AI/ML/tech topics, web_search for current events, generic for simple questions."
+        system = "Classify to 'vector_db', 'web_search', or 'generic'. vector_db for mountain biking topics, web_search for current events/news, generic for simple questions."
         routing = classifier.invoke([{"role": "system", "content": system}, {"role": "user", "content": request.query}])
         route = routing.route
 
         if route == "vector_db":
-            db_path = os.path.join(os.path.dirname(__file__), '../pipelines/agentic_rag_workflow/storage/faiss_agentic')
-            vector_db = load_vector_db(persist_directory=db_path)
+            vector_db = app.state.agentic_db
+            if vector_db is None:
+                return {"error": "Agentic RAG vector DB not available"}
             chunks = retrieve_chunks(vector_db, request.query, k=5)
             context = format_chunks(chunks)
         elif route == "web_search":
