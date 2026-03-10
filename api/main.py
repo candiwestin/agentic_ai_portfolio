@@ -4,11 +4,21 @@ from pydantic import BaseModel
 import sys
 import os
 import threading
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from dotenv import load_dotenv
 load_dotenv()
+
+# Import shared utils at top level
+from shared.utils.vector_utils import load_vector_db
+from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
+from shared.utils.llm_utils import get_llm, invoke_llm
+from shared.utils.web_search_utils import web_search, format_search_results
 
 app = FastAPI(title="Agentic AI Portfolio API")
 
@@ -27,26 +37,27 @@ app.state.dbs_loaded = False
 
 def load_dbs():
     try:
-        from shared.utils.vector_utils import load_vector_db
         basic_path = os.path.join(os.path.dirname(__file__), '../pipelines/basic_rag_workflow/storage/faiss_basic')
+        logger.info(f"Loading Basic RAG DB from: {basic_path}")
         app.state.basic_db = load_vector_db(persist_directory=basic_path)
-        print("✓ Basic RAG DB loaded")
+        logger.info("✓ Basic RAG DB loaded")
     except Exception as e:
-        print(f"Basic RAG DB error: {e}")
+        logger.error(f"Basic RAG DB error: {e}")
 
     try:
-        from shared.utils.vector_utils import load_vector_db
         agentic_path = os.path.join(os.path.dirname(__file__), '../pipelines/agentic_rag_workflow/storage/faiss_agentic')
+        logger.info(f"Loading Agentic RAG DB from: {agentic_path}")
         app.state.agentic_db = load_vector_db(persist_directory=agentic_path)
-        print("✓ Agentic RAG DB loaded")
+        logger.info("✓ Agentic RAG DB loaded")
     except Exception as e:
-        print(f"Agentic RAG DB error: {e}")
+        logger.error(f"Agentic RAG DB error: {e}")
 
     app.state.dbs_loaded = True
-    print("✓ All DBs ready")
+    logger.info("✓ All DBs ready")
 
 @app.on_event("startup")
 async def startup_event():
+    logger.info("Starting background DB load...")
     thread = threading.Thread(target=load_dbs, daemon=True)
     thread.start()
 
@@ -71,9 +82,6 @@ async def basic_rag(request: QueryRequest):
         if not app.state.dbs_loaded:
             return {"error": "Vector DBs are still loading, please try again in 30 seconds"}
 
-        from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
-        from shared.utils.llm_utils import get_llm, invoke_llm
-
         vector_db = app.state.basic_db
         if vector_db is None:
             return {"error": "Basic RAG vector DB not available"}
@@ -92,8 +100,6 @@ async def basic_rag(request: QueryRequest):
 @app.post("/api/langgraph-chat")
 async def langgraph_chat(request: ChatRequest):
     try:
-        from shared.utils.llm_utils import get_llm, invoke_llm
-
         llm = get_llm()
         messages = request.history + [{"role": "user", "content": request.message}]
         response = invoke_llm(llm, messages)
@@ -110,9 +116,6 @@ async def agentic_rag(request: QueryRequest):
 
         from pydantic import BaseModel as PydanticBase, Field
         from typing import Literal
-        from shared.utils.retrieval_utils import retrieve_chunks, format_chunks
-        from shared.utils.llm_utils import get_llm, invoke_llm
-        from shared.utils.web_search_utils import web_search, format_search_results
 
         class Router(PydanticBase):
             route: Literal["vector_db", "web_search", "generic"] = Field(description="Route the query")
