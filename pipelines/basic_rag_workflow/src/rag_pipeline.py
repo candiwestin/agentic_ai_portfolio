@@ -12,7 +12,7 @@ Vector Store Options:
 """
 import os
 from dotenv import load_dotenv
-from config import VECTOR_DB_PATH, SOURCE_URLS
+from pipelines.basic_rag_workflow.src.config import VECTOR_DB_PATH, SOURCE_URLS
 from shared.utils.loader_utils import load_content
 from shared.utils.chunking_utils import create_chunks
 from shared.utils.vector_utils import create_vector_db

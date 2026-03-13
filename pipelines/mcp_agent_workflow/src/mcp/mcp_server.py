@@ -9,16 +9,16 @@ from fastmcp import FastMCP
 from langchain_tavily import TavilySearch 
 import random
 from shared.utils.vector_utils import load_vector_db
-from config import VECTOR_DB_PATH
+from pipelines.mcp_agent_workflow.src.config import VECTOR_DB_PATH
 
 # create MCP instance
 mcp = FastMCP("MCP_Server")
 
 # define search function
 @mcp.tool()
-def search(query:str) -> str:
+def web_search(query:str) -> str:
     """
-    tool to search information from internet using TavilySearch
+    tool to search the web for current information using Tavily
     """
     print("web search tool is being called")
     tavily_obj = TavilySearch(max_results=3)

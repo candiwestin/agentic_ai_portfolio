@@ -171,6 +171,21 @@ python -m pipelines.langgraph_chat_workflow.src.workflow
 
 # CrewAI (provide a topic)
 python -m pipelines.crewai_workflow.src.crewai_version "your topic here"
+
+# MCP Pipeline
+**This is a client-server system. **Both processes must run simultaneously in separate terminals.**
+
+### Terminal 1 — Start the MCP Server
+source .venv/bin/activate
+python -m pipelines.mcp_agent_workflow.src.mcp.mcp_server
+
+Wait for:
+
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
+### Terminal 2 — Start the Client
+source .venv/bin/activate
+python -m pipelines.mcp_agent_workflow.src.agents.agent
 ```
 
 ### 7. Run the API locally

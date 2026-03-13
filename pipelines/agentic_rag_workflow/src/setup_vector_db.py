@@ -5,8 +5,8 @@ Source URLs are defined in config.py — edit there to change documents.
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import VECTOR_DB_PATH, SOURCE_URLS
-from config import VECTOR_DB_PATH, SOURCE_URLS
+from pipelines.agentic_rag_workflow.src.config import VECTOR_DB_PATH, SOURCE_URLS
+from pipelines.agentic_rag_workflow.src.config import VECTOR_DB_PATH, SOURCE_URLS
 from shared.utils.loader_utils import load_content
 from shared.utils.chunking_utils import create_chunks
 from shared.utils.vector_utils import create_vector_db

@@ -6,7 +6,7 @@ load_dotenv()
 
 # import libraries
 import asyncio
-from langchain.agents import create_agent
+from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from shared.utils.llm_utils import get_llm, DEFAULT_MODEL
 
@@ -28,7 +28,12 @@ async def setup_tools():
 async def main():
     tool_list = await setup_tools()
     llm = get_llm(model=DEFAULT_MODEL, temperature=0.1)
-    agent = create_agent(llm, tools=tool_list)
+    system_prompt = """You are a knowledgeable research assistant with access to these tools:
+- web_search: retrieve real-time information from the internet
+- search_docs: search the Deloitte company profile PDF
+- generate_otp: generate a one-time password only when explicitly requested
+Always use a tool to find information. Cite your source when answering."""
+    agent = create_react_agent(llm, tools=tool_list, prompt=system_prompt)
 
     print("Type 'exit', 'quit', or 'q' to quit.\n")
 

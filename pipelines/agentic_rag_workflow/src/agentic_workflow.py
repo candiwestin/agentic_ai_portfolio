@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
-from config import VECTOR_DB_PATH
+from pipelines.agentic_rag_workflow.src.config import VECTOR_DB_PATH
 from shared.utils.llm_utils import DEFAULT_MODEL
 from shared.utils.vector_utils import load_vector_db
 from shared.utils.retrieval_utils import retrieve_chunks, format_chunks

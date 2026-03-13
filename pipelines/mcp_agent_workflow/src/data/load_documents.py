@@ -2,11 +2,11 @@
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import VECTOR_DB_PATH
+from pipelines.mcp_agent_workflow.src.config import VECTOR_DB_PATH
 from shared.utils.loader_utils import load_content
 from shared.utils.chunking_utils import create_chunks
 from shared.utils.vector_utils import create_vector_db
-from config import VECTOR_DB_PATH
+from pipelines.mcp_agent_workflow.src.config import VECTOR_DB_PATH
 
 SOURCE_URLS = [
     "https://modelcontextprotocol.io/introduction",
