@@ -94,7 +94,7 @@ agentic_ai_portfolio/
 ├── data/
 │   └── sample_files/                  # Source PDFs
 │
-├── .python-version                    # Python 3.11.9 (required)
+├── .python-version                    # Python 3.11 (required)
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
@@ -104,7 +104,7 @@ agentic_ai_portfolio/
 
 ## Requirements
 
-- Python **3.11** — required for HuggingFace/LangChain compatibility
+- Python **3.11** — required for HuggingFace/LangChain compatibility. Do NOT use 3.12+.
 - [Groq API key](https://console.groq.com/)
 - [Tavily API key](https://app.tavily.com/)
 
@@ -122,6 +122,8 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install --upgrade pip
 ```
 
+> **Note:** The `.venv` folder is not committed to the repo. You must create it locally each time you set up on a new machine. Once created, you only need to activate it (`source .venv/bin/activate`) on return visits.
+
 ### 2. Install PyTorch first
 
 PyTorch must be installed before the rest of the dependencies:
@@ -137,6 +139,12 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+> If pip hits dependency resolution errors, use `uv` instead:
+> ```bash
+> pip install uv
+> uv pip install -r requirements.txt
+> ```
+
 ### 4. Configure environment variables
 
 Create a `.env` file in the project root:
@@ -151,6 +159,8 @@ CREWAI_MODEL=groq/llama-3.3-70b-versatile
 
 ### 5. Build vector databases
 
+Run all setup scripts from the project root:
+
 ```bash
 python -m pipelines.basic_rag_workflow.src.setup_vector_db
 python -m pipelines.agentic_rag_workflow.src.setup_vector_db
@@ -158,6 +168,8 @@ python -m pipelines.mcp_agent_workflow.src.data.load_documents
 ```
 
 ### 6. Run a pipeline
+
+All pipelines are run from the **project root** with the venv activated:
 
 ```bash
 # Basic RAG
@@ -171,19 +183,25 @@ python -m pipelines.langgraph_chat_workflow.src.workflow
 
 # CrewAI (provide a topic)
 python -m pipelines.crewai_workflow.src.crewai_version "your topic here"
+```
 
-# MCP Pipeline
-**This is a client-server system. **Both processes must run simultaneously in separate terminals.**
+### MCP Pipeline — requires two terminals
 
-### Terminal 1 — Start the MCP Server
+This is a client-server system. Both processes must run simultaneously.
+
+**Terminal 1 — Start the MCP Server:**
+```bash
 source .venv/bin/activate
 python -m pipelines.mcp_agent_workflow.src.mcp.mcp_server
+```
 
 Wait for:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+```
 
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-
-### Terminal 2 — Start the Client
+**Terminal 2 — Start the Agent Client:**
+```bash
 source .venv/bin/activate
 python -m pipelines.mcp_agent_workflow.src.agents.agent
 ```
@@ -208,16 +226,46 @@ uvicorn main:app --reload --port 8000
 
 ---
 
+## Returning to This Project
+
+Each time you open this project, activate the venv before running anything:
+
+```bash
+source .venv/bin/activate
+```
+
+If you're using **Cursor** or **VS Code**, set the interpreter once and it will auto-activate:
+`Ctrl+Shift+P` → `Python: Select Interpreter` → select `.venv (Python 3.11)`
+
+---
+
 ## Common Issues
 
 **Wrong Python version**
-This project requires Python 3.11. Using 3.12+ causes HuggingFace/Pydantic dependency conflicts.
+This project requires Python 3.11. Using 3.12+ causes HuggingFace/Pydantic dependency conflicts. If your venv was created with the wrong version:
+```bash
+deactivate
+rm -rf .venv
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install torch==2.10.0 && pip install -r requirements.txt && pip install -e .
+```
 
 **`ModuleNotFoundError: No module named 'shared'`**
 Run `pip install -e .` from the project root with the venv activated.
 
+**`ModuleNotFoundError: No module named 'langchain_community'`**
+The requirements install failed due to a dependency conflict. Run:
+```bash
+pip install -r requirements.txt
+```
+Or install directly: `pip install langchain-community`
+
 **Rate limit errors with Groq**
-The free tier has token-per-minute limits. CrewAI workflows are particularly token-heavy — wait 30-60 seconds and retry.
+The free tier has token-per-minute limits. CrewAI workflows are particularly token-heavy — wait 30–60 seconds and retry.
 
 **Vector database not found**
 Run the setup scripts in step 5 above. Each pipeline needs its own database built before use.
+
+**MCP agent tool errors**
+Make sure the MCP server (Terminal 1) is fully started before launching the agent (Terminal 2). The tool named `web_search` is used for Tavily search — do not rename it back to `search` as this conflicts with Groq's internal tooling.

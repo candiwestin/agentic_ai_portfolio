@@ -1,6 +1,6 @@
 # MCP Agent Workflow
 
-A client-server AI agent system built on FastMCP and LangChain. The server exposes tools via the Model Context Protocol (MCP) over SSE. The client connects to the server, retrieves the available tools, and uses a LangChain agent powered by Groq to answer questions by selecting and invoking the appropriate tool.
+A client-server AI agent system built on FastMCP and LangChain. The server exposes tools via the Model Context Protocol (MCP) over SSE. The client connects to the server, retrieves the available tools, and uses a LangGraph agent powered by Groq to answer questions by selecting and invoking the appropriate tool.
 
 > **Environment setup:** See the [root README](../../README.md) for Python version requirements, venv creation, and dependency installation.
 
@@ -11,7 +11,7 @@ A client-server AI agent system built on FastMCP and LangChain. The server expos
 ```
 ┌─────────────────────────────┐         ┌─────────────────────────────┐
 │        MCP Client           │◄──SSE──►│        MCP Server           │
-│   LangChain + Groq agent    │         │   FastMCP tool definitions  │
+│   LangGraph + Groq agent    │         │   FastMCP tool definitions  │
 │   Discovers tools at runtime│         │   Exposes 3 tools via HTTP  │
 └─────────────────────────────┘         └─────────────────────────────┘
 ```
@@ -20,11 +20,13 @@ The agent has access to three tools exposed by the MCP server:
 
 | Tool | Description |
 |------|-------------|
-| `search` | Searches the web using Tavily for current information |
+| `web_search` | Searches the web using Tavily for current information |
 | `search_docs` | Searches the MCP documentation knowledge base using FAISS vector search |
 | `generate_otp` | Generates a random 6-digit number on request |
 
 The agent automatically decides which tool to use based on the query — no hardcoded routing logic.
+
+> **Note:** The web search tool is named `web_search` (not `search`). Using the name `search` conflicts with Groq's internal tooling and causes tool call validation errors.
 
 ---
 
@@ -54,7 +56,7 @@ python -m pipelines.mcp_agent_workflow.src.mcp.mcp_server
 
 Wait for:
 ```
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
 ### Terminal 2 — Start the Client
@@ -77,7 +79,7 @@ Why was MCP created?
 How does MCP compare to traditional API integrations?
 ```
 
-### Routes to search — Tavily web search
+### Routes to web_search — Tavily web search
 ```
 What companies have adopted MCP?
 What are the latest MCP developments?
@@ -108,7 +110,7 @@ pipelines/mcp_agent_workflow/
 │   ├── mcp/
 │   │   └── mcp_server.py         # MCP server — Terminal 1
 │   ├── agents/
-│   │   └── agent.py              # LangChain agent client — Terminal 2
+│   │   └── agent.py              # LangGraph agent client — Terminal 2
 │   └── data/
 │       └── load_documents.py     # Document loading and FAISS indexing
 └── storage/
@@ -131,6 +133,9 @@ shared/utils/vector_utils.py      # FAISS vector store
 
 **Server not running when starting the client**
 Always start Terminal 1 first and wait for the Uvicorn message before starting Terminal 2.
+
+**Tool call validation error from Groq**
+The web search tool must be named `web_search` — not `search`. The name `search` conflicts with Groq's internal tooling and causes a `400 Bad Request` error.
 
 **FAISS index not found**
 Run: `python -m pipelines.mcp_agent_workflow.src.data.load_documents`

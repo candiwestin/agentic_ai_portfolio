@@ -68,6 +68,7 @@ Both tools are available to all agents:
 ### CLI — any topic
 
 ```bash
+source .venv/bin/activate
 python -m pipelines.crewai_workflow.src.crewai_version "Create a parental leave policy for a US startup"
 python -m pipelines.crewai_workflow.src.crewai_version "Write a remote work policy for a global tech company"
 python -m pipelines.crewai_workflow.src.crewai_version "Draft a data privacy policy for a healthcare SaaS"
