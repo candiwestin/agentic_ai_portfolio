@@ -39,7 +39,7 @@ def generate_otp() -> str:
 @mcp.tool()
 def search_docs(query: str) -> str:
     """
-    Search the Deloitte company profile PDF for relevant information
+    Search the documentation for relevant information
     """
     print("search docs tool is being called")
     db = load_vector_db(persist_directory=VECTOR_DB_PATH)
