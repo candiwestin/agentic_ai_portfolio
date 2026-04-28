@@ -1,3 +1,17 @@
+## Independent Project Statement
+
+This project was independently created before employment at Jack Henry.
+
+Pre-employment snapshot date: 2026-04-28.
+
+It was built on personal time, using personal equipment, personal accounts, and non-employer data. It is not based on employer systems, employer code, employer architecture, employer workflows, employer client data, or employer confidential information.
+
+This project is intended as a personal portfolio project demonstrating my technical skills.
+
+This project is a general-purpose AI/automation portfolio project and is not designed for banking, financial institution operations, or employer-specific workflows.
+
+---
+
 # Agentic AI Portfolio
 
 A monorepo of production-ready agentic AI pipelines built with LangChain, LangGraph, FastMCP, CrewAI, and Groq. Each pipeline demonstrates a distinct architecture pattern for building intelligent, tool-using AI systems — from basic retrieval to multi-agent collaboration.
